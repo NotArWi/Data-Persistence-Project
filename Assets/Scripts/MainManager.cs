@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class MainManager : MonoBehaviour
 {
@@ -18,10 +19,22 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
+
+    private string playerName;
+    public TMP_Text BestScoreText;
+    private int bestScore = 0;
+    private string bestPlayer = "None";
+
     // Start is called before the first frame update
     void Start()
     {
+
+        playerName = PlayerPrefs.GetString("PlayerName", "Player");
+        bestScore = PlayerPrefs.GetInt("BestScore", 0);
+        bestPlayer = PlayerPrefs.GetString("BestPlayer", "None");
+        ScoreText.text = $"{playerName} score : {m_Points}";
+        UpdateUI();
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -36,6 +49,12 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        
+    }
+
+    void UpdateUI()
+    {
+        BestScoreText.text = $"Best Score: {bestPlayer} - {bestScore}";
     }
 
     private void Update()
@@ -65,7 +84,19 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = $"{playerName} score : {m_Points}";
+
+        if (m_Points > bestScore)
+        {
+            bestScore = m_Points;
+            bestPlayer = playerName;
+
+            PlayerPrefs.SetInt("BestScore", bestScore);
+            PlayerPrefs.SetString("BestPlayer", bestPlayer);
+            PlayerPrefs.Save(); 
+
+            UpdateUI();
+        }
     }
 
     public void GameOver()
